@@ -1,0 +1,46 @@
+services:
+  app:
+    build: .
+    image: eventreg/app:${TAG:-latest}
+    ports:
+      - "4000:4000"
+    environment:
+      PORT: 3000
+      DB_HOST: db
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: event_registration
+      JWT_SECRET: ${JWT_SECRET}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks: [eventreg-net]
+
+  db:
+    build: ./db
+    image: eventreg/db:${TAG:-latest}
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: event_registration
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    networks: [eventreg-net]
+    # Database port is intentionally NOT published to the host — only the
+    # app/proxy should be reachable from outside the Docker network.
+
+volumes:
+  db-data:
+
+networks:
+  eventreg-net:
