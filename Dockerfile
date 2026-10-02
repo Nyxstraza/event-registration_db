@@ -18,5 +18,4 @@ RUN rm -rf /usr/share/nginx/html/* && cp -r frontend/dist/. /usr/share/nginx/htm
 COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 4000
-
 CMD ["sh", "-c", "node /app/backend/src/server.js & nginx -g 'daemon off;'"]
